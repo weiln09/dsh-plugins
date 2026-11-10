@@ -1,9 +1,30 @@
 {
-  "name": "@local/dsh-skill-manager",
+  "name": "@weiln09/dsh-skill-manager",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
-  "description": "Skill Manager — browse, import (zip/GitHub), edit, delete and update DSH skills, and scope each skill to global or specific workspaces.",
+  "description": "Skill Manager for DSH — browse, import from zip or GitHub, edit, delete and update skills, and scope each skill to global or specific workspaces.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "skill",
+    "skills",
+    "skill-manager"
+  ],
+  "license": "MIT",
+  "author": "weiln09",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weiln09/dsh-plugins.git",
+    "directory": "plugins/dsh-skill-manager"
+  },
+  "homepage": "https://github.com/weiln09/dsh-plugins/tree/master/plugins/dsh-skill-manager#readme",
+  "bugs": {
+    "url": "https://github.com/weiln09/dsh-plugins/issues"
+  },
+  "engines": {
+    "dsh": ">=0.2.2 <0.3.0"
+  },
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
@@ -18,7 +39,8 @@
     "lib/client.js",
     "cordis.patch.yml",
     "locale/*.json",
-    "icon.svg"
+    "icon.svg",
+    "README.md"
   ],
   "icon": "./icon.svg",
   "dsh": {

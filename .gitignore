@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Build / artifacts
+dist/
+*.tgz
+*.log
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
