@@ -1,0 +1,3 @@
+- insert:
+    - id: dsh-skill-manager
+      name: '@local/dsh-skill-manager'
