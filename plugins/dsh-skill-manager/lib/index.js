@@ -150,9 +150,7 @@ function makeApiHandler(ctx, invalidateProvider) {
 
 export const name = 'dsh-skill-manager'
 
-export const inject = {
-  optional: ['skills', 'webServer', 'workspaceRegistry', 'tools'],
-}
+export const inject = ['skills', 'tools']
 
 export function apply(ctx) {
   fsp.mkdir(libraryRoot(), { recursive: true }).catch(() => {})
@@ -161,7 +159,7 @@ export function apply(ctx) {
 
   // 1) Serve the managed library through the skills registry. Disabled skills
   //    are simply not returned, which is what the toggle means.
-  const skillsService = ctx.get?.('skills')
+  const skillsService = ctx.get('skills')
   if (skillsService && typeof skillsService.registerProvider === 'function') {
     ctx.effect(() => skillsService.registerProvider((control) => {
       invalidateProvider = () => { try { control.invalidate() } catch {} }
@@ -211,19 +209,22 @@ export function apply(ctx) {
     }), 'dsh-skill-manager.skills-provider')
   }
 
-  // 2) HTTP API for the panel.
-  const webServer = ctx.get?.('webServer')
-  if (webServer && typeof webServer.register === 'function') {
-    const handler = makeApiHandler(ctx, () => { if (typeof invalidateProvider === 'function') invalidateProvider() })
-    ctx.effect(() => webServer.register({
+  // 2) HTTP API for the panel. webServer is a web-only service (absent under
+  //    headless), so register it reactively: the callback runs only once the
+  //    service is available, unlike a synchronous ctx.get() before it is ready.
+  const handler = makeApiHandler(ctx, () => { if (typeof invalidateProvider === 'function') invalidateProvider() })
+  ctx.inject(['webServer'], (ws) => {
+    const webServer = ws.get('webServer')
+    if (!webServer || typeof webServer.register !== 'function') return
+    ws.effect(() => webServer.register({
       kind: 'prefix',
       path: '/skill-manager/api',
       handler,
     }), 'dsh-skill-manager.api-route')
-  }
+  })
 
   // 3) The same operations for the agent.
-  const tools = ctx.get?.('tools')
+  const tools = ctx.get('tools')
   if (tools && typeof tools.register === 'function') {
     ctx.effect(() => tools.register({
       name: 'skill_manager',

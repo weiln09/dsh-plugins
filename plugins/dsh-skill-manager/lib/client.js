@@ -1134,7 +1134,7 @@ window.__ModuleLoader__.load({
     // Registration
     // ---------------------------------------------------------------------
     return {
-      inject: ['slots'],
+      inject: ['slots', 'locale'],
       apply(ctx) {
         const localeSvc = ctx.get ? ctx.get('locale') : undefined
 
