@@ -1,3 +1,3 @@
 - insert:
-    - id: '@local/dsh-skill-manager'
-      name: '@local/dsh-skill-manager'
+    - id: '@weiln09/dsh-skill-manager'
+      name: '@weiln09/dsh-skill-manager'

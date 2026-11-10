@@ -1,5 +1,5 @@
 {
-  "name": "@local/dsh-skill-manager",
+  "name": "@weiln09/dsh-skill-manager",
   "version": "1.0.0",
   "type": "module",
   "description": "Skill Manager for DSH — browse, import from zip or GitHub, edit, delete and update skills, and scope each skill to global or specific workspaces.",

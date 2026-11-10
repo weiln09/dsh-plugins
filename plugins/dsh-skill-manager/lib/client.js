@@ -1,4 +1,4 @@
-// @local/dsh-skill-manager — Client half (browser)
+// @weiln09/dsh-skill-manager — Client half (browser)
 //
 // Left-rail entry + main panel. The panel shows every skill dsh can see:
 // a card grid in the shape of a tool drawer, with an enable switch and a scope
@@ -9,7 +9,7 @@
 // re-renders on every locale change.
 
 window.__ModuleLoader__.load({
-  id: '@local/dsh-skill-manager',
+  id: '@weiln09/dsh-skill-manager',
   factory(require) {
     const React = require('react')
     const h = React.createElement
