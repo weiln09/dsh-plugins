@@ -191,12 +191,35 @@ export function skillDir(name) {
   return path.join(libraryRoot(), name)
 }
 
+/**
+ * Parsed-SKILL.md cache keyed by `<path>` → { mtimeMs, size, text }.
+ *
+ * The catalog is rebuilt on every panel refresh and every agent step that
+ * lists skills, and each rebuild used to read and parse every SKILL.md from
+ * disk again. A `stat` is enough to know whether the cached text is still the
+ * current one, so a refresh with nothing changed costs one stat per skill
+ * instead of a read + parse.
+ */
+const skillFileCache = new Map()
+
 export async function readSkillFile(name) {
+  const file = path.join(skillDir(name), 'SKILL.md')
   try {
-    return await fsp.readFile(path.join(skillDir(name), 'SKILL.md'), 'utf8')
+    const stat = await fsp.stat(file)
+    const cached = skillFileCache.get(file)
+    if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) return cached.text
+    const text = await fsp.readFile(file, 'utf8')
+    skillFileCache.set(file, { mtimeMs: stat.mtimeMs, size: stat.size, text })
+    return text
   } catch {
+    skillFileCache.delete(file)
     return null
   }
+}
+
+/** Forget one cached SKILL.md (after this plugin wrote it). */
+export function invalidateSkillFile(name) {
+  skillFileCache.delete(path.join(skillDir(name), 'SKILL.md'))
 }
 
 export function normalizeScope(scope) {
@@ -458,6 +481,9 @@ async function writeSkillFiles(name, { description, body }) {
   const dir = skillDir(name)
   await ensureDir(dir)
   await fsp.writeFile(path.join(dir, 'SKILL.md'), buildSkillMarkdown({ name, description, body }), 'utf8')
+  // The cache is keyed by mtime+size; rewriting within the same clock tick
+  // could keep an equal stat, so the entry is dropped explicitly.
+  invalidateSkillFile(name)
 }
 
 // Bring an existing on-disk skill under management.
@@ -517,20 +543,32 @@ export async function adoptSkill({ name, from, scope, enabled }) {
   return getSkill(name)
 }
 
-export async function createOrUpdateSkill({ name, description, body, scope, enabled, source = 'manual', github = null, overwrite = true }) {
+export async function createOrUpdateSkill({ name, description, body, scope, enabled, source, github = null, overwrite = true }) {
   if (!isValidName(name)) throw new Error('Name must be kebab-case (lowercase letters, digits, hyphens).')
   if (!description || !String(description).trim()) throw new Error('A description is required.')
   const state = await loadState()
   if (state.skills[name] && !overwrite) throw new Error(`Skill "${name}" already exists`)
-  await writeSkillFiles(name, { description, body })
   const prev = state.skills[name] || {}
+  // Editing is not importing. A row's provenance (manual / github / zip /
+  // adopted), its GitHub coordinates and where it was copied from all describe
+  // where the skill CAME from, and an edit cannot change that. Overwriting
+  // `source` with the caller's default silently turned every GitHub skill into
+  // a manual one, which disabled "update from GitHub" for good, and dropped
+  // `adoptedFrom` so the panel lost the pointer back to the original folder.
+  const nextSource = source || prev.source || 'manual'
+  // A caller that omits `scope` keeps the current one. `normalizeScope(undefined)`
+  // answers "global", which would quietly widen a workspace-scoped skill to
+  // every workspace as a side effect of editing its body.
+  const nextScope = scope === undefined ? (prev.scope || normalizeScope(undefined)) : normalizeScope(scope)
+  await writeSkillFiles(name, { description, body })
   state.skills[name] = {
     name,
-    source,
+    source: nextSource,
     description: String(description).trim(),
     enabled: enabled !== undefined ? enabled !== false : prev.enabled !== false,
-    scope: normalizeScope(scope),
+    scope: nextScope,
     github: github || prev.github || null,
+    ...(prev.adoptedFrom ? { adoptedFrom: prev.adoptedFrom } : {}),
     createdAt: prev.createdAt || nowIso(),
     updatedAt: nowIso(),
   }
@@ -573,6 +611,7 @@ export async function deleteSkill(name) {
   await saveState(state)
   const dir = skillDir(name)
   if (existsSync(dir)) await fsp.rm(dir, { recursive: true, force: true })
+  invalidateSkillFile(name)
   return { deleted: name }
 }
 
@@ -585,6 +624,7 @@ async function adoptDirectory(skillDirFound, { name, description, body, source, 
   await fsp.rm(dir, { recursive: true, force: true })
   await ensureDir(dir)
   await copyTree(skillDirFound, dir)
+  invalidateSkillFile(name)
   if (!description) await writeSkillFiles(name, { description: `Skill ${name}`, body })
   const state = await loadState()
   const prev = state.skills[name] || {}

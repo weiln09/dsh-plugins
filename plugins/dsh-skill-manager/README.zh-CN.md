@@ -49,6 +49,24 @@
 - DSH `>=0.2.2 <0.3.0`（在 `engines.dsh` 中声明）。
 - Web 预设（面板是一个 Web UI slot；Host 侧在任何具备 `skills`、`webServer`、`tools` 服务的 profile 下都能工作）。
 
+## 接口约定
+
+面板通过 loopback 上的 `/skill-manager/api` 与 Host 通信。只有 `list`、`rescan`、
+`get` 接受 GET；所有写操作（`create`、`save`、`delete`、`setScope`、
+`setEnabled`、`adopt`、`importZip`、`importGithub`、`update`）都必须用 POST 且带
+`application/json`。跨站请求（`Origin` 与 `Host` 不一致）一律拒绝，所以一个链接
+或一个图片标签无法删除技能，也无法触发 `git clone`。
+
+## 测试
+
+```sh
+npm test
+```
+
+20 项测试覆盖托管库的增删改与启停/范围、编辑后仍保留来源（GitHub 导入与接管来的
+技能仍可更新）、名称与描述校验、工作区范围匹配、`SKILL.md` 缓存，以及面板路由的
+安全护栏。
+
 ## 许可证
 
 MIT © weiln09

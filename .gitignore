@@ -10,3 +10,6 @@ dist/
 # Editor
 .vscode/
 .idea/
+
+# Local research notes (kept on disk, not published)
+docs/zcode-mobile-remote-control-report.md

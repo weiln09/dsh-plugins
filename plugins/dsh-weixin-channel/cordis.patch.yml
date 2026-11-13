@@ -1,0 +1,4 @@
+# dsh-weixin-channel bundle patch: the plugin row this bundle owns.
+- insert:
+    - id: weixin-channel
+      name: '@weiln09/dsh-weixin-channel'

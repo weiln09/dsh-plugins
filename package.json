@@ -1,68 +1,26 @@
 {
-  "name": "@deepseek-ai/dsh-client-locale",
-  "description": "Locale plugin: Host-backed preference, extensible language catalog, browser fallback, and typed built-in dictionaries",
-  "version": "0.2.2-rc.1",
-  "publishConfig": {
-    "access": "public"
-  },
+  "name": "@weiln09/dsh-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A collection of DSH plugins: dsh-skill-manager and dsh-weixin-channel.",
+  "license": "MIT",
+  "author": "weiln09",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
-    "directory": "packages/client/locale"
+    "url": "git+https://github.com/weiln09/dsh-plugins.git"
   },
-  "type": "module",
-  "main": "lib/index.js",
-  "types": "lib/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./lib/types/index.d.ts",
-      "default": "./lib/index.js"
-    },
-    "./client": {
-      "types": "./lib/types/client/index.d.ts",
-      "default": "./lib/client.js"
-    },
-    "./src/*": "./src/*",
-    "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+  "homepage": "https://github.com/weiln09/dsh-plugins#readme",
+  "bugs": {
+    "url": "https://github.com/weiln09/dsh-plugins/issues"
   },
-  "dsh": {
-    "client": {
-      "inject": [
-        "@deepseek-ai/dsh-client-connection",
-        "@deepseek-ai/dsh-client-ui-renderer",
-        "@deepseek-ai/dsh-client-ui-settings",
-        "@deepseek-ai/dsh-api-remotes"
-      ],
-      "platform": "web",
-      "immediately": true
-    }
+  "workspaces": [
+    "plugins/*"
+  ],
+  "scripts": {
+    "test": "node --test plugins/*/test/*.test.js"
   },
-  "license": "MIT",
-  "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.1.0"
-  },
-  "devDependencies": {
-    "@deepseek-ai/cordis": "~4.1.0",
-    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-test-runtime": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-package-manifest": "0.2.2-rc.1",
-    "react": "^18.2.0",
-    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-settings": "0.2.2-rc.1"
-  },
-  "dependencies": {
-    "@deepseek-ai/schemastery": "~3.19.0"
-  },
-  "files": [
-    "locale/*.json",
-    "lib/index.js",
-    "lib/client.js",
-    "lib/types/**/*.d.ts"
-  ]
+  "engines": {
+    "node": ">=22"
+  }
 }

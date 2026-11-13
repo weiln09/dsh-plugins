@@ -49,6 +49,26 @@ After installation, the Skill Manager appears in the Web sidebar and its `skill_
 - DSH `>=0.2.2 <0.3.0` (declared in `engines.dsh`).
 - The Web preset (the panel is a Web UI slot; the Host side works in any profile with the `skills`, `webServer`, and `tools` services).
 
+## API notes
+
+The panel talks to `/skill-manager/api` on the loopback Host. Only `list`,
+`rescan`, and `get` answer a GET; everything that writes — `create`, `save`,
+`delete`, `setScope`, `setEnabled`, `adopt`, `importZip`, `importGithub`,
+`update` — requires a POST with `application/json`. A cross-origin request
+(`Origin` host ≠ `Host`) is refused, so a link or an image tag cannot delete a
+skill or start a `git clone`.
+
+## Tests
+
+```sh
+npm test
+```
+
+20 tests cover the managed library (create, edit, delete, enable/scope), the
+provenance rules that keep a GitHub or adopted skill updatable after an edit,
+name and description validation, workspace scope matching, the `SKILL.md`
+cache, and the panel route guards.
+
 ## License
 
 MIT © weiln09

@@ -33,6 +33,9 @@
     "./locale/*.json": "./locale/*.json",
     "./package.json": "./package.json"
   },
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "lib/index.js",
     "lib/skills.js",

@@ -1,0 +1,76 @@
+{
+  "name": "@weiln09/dsh-weixin-channel",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Weixin (iLink) bot channel for DSH — per-chat workspace and model switching, numbered menus, approvals and questions answered inside WeChat.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "weixin",
+    "wechat",
+    "ilink",
+    "im-bridge"
+  ],
+  "license": "MIT",
+  "author": "weiln09",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weiln09/dsh-plugins.git",
+    "directory": "plugins/dsh-weixin-channel"
+  },
+  "homepage": "https://github.com/weiln09/dsh-plugins/tree/master/plugins/dsh-weixin-channel#readme",
+  "bugs": {
+    "url": "https://github.com/weiln09/dsh-plugins/issues"
+  },
+  "engines": {
+    "dsh": ">=0.2.2-0 <0.3.0",
+    "node": ">=22"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client",
+    "locale",
+    "docs",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/schemastery": "~3.19.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "icon": "./icon.svg",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  }
+}

@@ -42,6 +42,32 @@ function readBody(req) {
   })
 }
 
+// Actions that only read state, and are therefore safe to answer for a GET.
+// Everything else writes a file, deletes a folder, or runs `git clone`; a
+// query string must not be able to trigger those.
+const READ_ONLY_ACTIONS = new Set(['list', 'rescan', 'get'])
+
+// The DSH UI is same-origin, so a cross-origin request always carries an
+// `Origin` that differs from `Host`. A request with no Origin is a non-browser
+// client (curl, a test) and cannot be a drive-by from another page.
+function sameOrigin(req) {
+  const origin = req.headers?.origin
+  if (!origin) return true
+  const host = req.headers?.host
+  if (!host) return false
+  try {
+    return new URL(origin).host === host
+  } catch {
+    return false
+  }
+}
+
+// A cross-origin `<form>` can only send urlencoded, multipart, or text/plain,
+// so demanding JSON forces a CORS preflight this server never answers.
+function isJsonRequest(req) {
+  return String(req.headers?.['content-type'] ?? '').toLowerCase().startsWith('application/json')
+}
+
 // A handler route owns the full request/response cycle. (A `resource` route
 // only answers GET/HEAD, so POST would come back 405.)
 function makeApiHandler(ctx, invalidateProvider) {
@@ -50,13 +76,22 @@ function makeApiHandler(ctx, invalidateProvider) {
     res.setHeader('cache-control', 'no-store')
     const send = (status, obj) => { res.statusCode = status; res.end(JSON.stringify(obj)) }
 
+    if (!sameOrigin(req)) {
+      send(403, { ok: false, error: 'Cross-origin request refused' }); return
+    }
+
     let payload = {}
     try {
       if (req.method === 'POST') {
+        if (!isJsonRequest(req)) {
+          send(415, { ok: false, error: 'Send this request as application/json' }); return
+        }
         const text = await readBody(req)
         payload = text ? JSON.parse(text) : {}
-      } else {
+      } else if (req.method === 'GET' || req.method === 'HEAD') {
         payload = Object.fromEntries(new URL(req.url, 'http://localhost').searchParams.entries())
+      } else {
+        send(405, { ok: false, error: 'Only GET and POST are supported' }); return
       }
     } catch (error) {
       send(400, { ok: false, error: `Bad request: ${error?.message || error}` }); return
@@ -64,6 +99,10 @@ function makeApiHandler(ctx, invalidateProvider) {
 
     const action = payload.action
     const cwd = payload.cwd || undefined
+
+    if (req.method !== 'POST' && !READ_ONLY_ACTIONS.has(String(action))) {
+      send(405, { ok: false, error: `${action} requires POST` }); return
+    }
 
     try {
       switch (action) {
@@ -88,9 +127,12 @@ function makeApiHandler(ctx, invalidateProvider) {
             scope: payload.scope, enabled: payload.enabled, source: 'manual', overwrite: false,
           }) }); return
         case 'save':
+          // No `source`: saving is an edit, and an edit cannot change where a
+          // skill came from. Passing one let the panel downgrade a GitHub skill
+          // to "manual" and permanently disable its update path.
           send(200, { ok: true, skill: await createOrUpdateSkill({
             name: payload.name, description: payload.description, body: payload.body,
-            scope: payload.scope, enabled: payload.enabled, source: payload.source || 'manual', overwrite: true,
+            scope: payload.scope, enabled: payload.enabled, overwrite: true,
           }) }); return
         case 'delete':
           send(200, { ok: true, ...(await deleteSkill(payload.name)) }); return
